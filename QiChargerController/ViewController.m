@@ -28,6 +28,7 @@
     [super viewDidLoad];
     [self addSerialPortList];
     
+    //package Qi cmd python script path
     self.pythonScriptPath = [[NSBundle mainBundle] pathForResource:@"cmdPackage.py" ofType:nil];
     
 }
@@ -37,12 +38,13 @@
     NSString *cmd = @"";
     usleep(100000);
     if (value.length > 0) {
+        //get cmd package
         cmd = [Utility runPyhtonScript:[NSString stringWithFormat:@"python %@ %@ %@ %@",self.pythonScriptPath,Register,nargs,value]];
     }
     else{
         cmd = [Utility runPyhtonScript:[NSString stringWithFormat:@"python %@ %@ %@",self.pythonScriptPath,Register,nargs]];
     }
-    
+    //hexstring to data
     NSData *data = [Utility converthexStrToNSData:cmd];
     [self sendMessage:data];
 }
@@ -124,6 +126,7 @@
 
 - (void)serialPort:(ORSSerialPort *)serialPort didReceiveData:(NSData *)data
 {
+    //data to hexstring
     NSString *hexStr = [Utility convertDataToHexStr:data];
     NSString *string = @"";
     if (hexStr.length < 10) {
