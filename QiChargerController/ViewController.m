@@ -32,7 +32,7 @@
     
 }
 
-- (void)writeToQiChargingWithRegister:(NSString *)Register nargs:(NSString *)nargs value:(NSString *)value{
+- (void)writeToQiChargerWithRegister:(NSString *)Register nargs:(NSString *)nargs value:(NSString *)value{
     
     NSString *cmd = @"";
     usleep(100000);
@@ -54,7 +54,7 @@
             NSLog(@"uart open");
             self.uartOpenButton.title = @"CLOSE";
             //enter debug mode
-            [self writeToQiChargingWithRegister:@"0x05" nargs:@"1" value:@"1"];
+            [self writeToQiChargerWithRegister:@"0x05" nargs:@"1" value:@"1"];
         }
     }
     else{
@@ -70,31 +70,31 @@
 
 - (IBAction)setRailV:(NSButton *)sender {
     
-    [self writeToQiChargingWithRegister:@"0x0A" nargs:@"2" value:self.railVtext.stringValue];
+    [self writeToQiChargerWithRegister:@"0x0A" nargs:@"2" value:self.railVtext.stringValue];
 }
 
 - (IBAction)enablePWM:(NSButton *)sender {
 
-    [self writeToQiChargingWithRegister:@"0x0D" nargs:@"0" value:@""];
+    [self writeToQiChargerWithRegister:@"0x0D" nargs:@"0" value:@""];
 
 }
 - (IBAction)readRailV:(NSButton *)sender {
 
-    [self writeToQiChargingWithRegister:@"0x09" nargs:@"0" value:@""];
+    [self writeToQiChargerWithRegister:@"0x09" nargs:@"0" value:@""];
 
 }
 
 
 - (IBAction)readRailC:(NSButton *)sender {
     
-    [self writeToQiChargingWithRegister:@"0x0F" nargs:@"0" value:@""];
+    [self writeToQiChargerWithRegister:@"0x0F" nargs:@"0" value:@""];
 
 }
 
 
 - (IBAction)readFW:(NSButton *)sender {
 
-    [self writeToQiChargingWithRegister:@"0x28" nargs:@"0" value:@""];
+    [self writeToQiChargerWithRegister:@"0x28" nargs:@"0" value:@""];
 
 }
 
@@ -125,28 +125,32 @@
 - (void)serialPort:(ORSSerialPort *)serialPort didReceiveData:(NSData *)data
 {
     NSString *hexStr = [Utility convertDataToHexStr:data];
-    if (hexStr.length < 10) {
-        return;
-    }
-    NSMutableArray *mutableArr = [NSMutableArray arrayWithCapacity:10];
-    for (int idx = 0; idx+2 <= hexStr.length; idx+=2) {
-        NSRange range = NSMakeRange(idx, 2);
-        NSString* ch = [hexStr substringWithRange:range];
-        [mutableArr addObject:ch];
-    }
-    NSString *value = @"";
-    for (int i = 0; i < [mutableArr[2] intValue]; i++) {
-        value = [NSString stringWithFormat:@"%@%@",value,mutableArr[i+3]];
-    }
-    unsigned long intValue = strtoul([value UTF8String],0,16);
     NSString *string = @"";
-    string = [NSString stringWithFormat:@"%@\n",[NSString stringWithFormat:@"%lu",intValue]];
-    if ([mutableArr[1] containsString:@"a8"]) {
-        string = [NSString stringWithFormat:@"%lu.%lu.%lu\n",(intValue >> 12) & 0xf, (intValue >> 8) & 0xf, (intValue >> 4) & 0x0f];
+    if (hexStr.length < 10) {
+        string = @"ERROR\n";
     }
-    if (intValue == 1) {
-        string = @"OK\n";
+    else{
+        NSMutableArray *mutableArr = [NSMutableArray arrayWithCapacity:10];
+        for (int idx = 0; idx+2 <= hexStr.length; idx+=2) {
+            NSRange range = NSMakeRange(idx, 2);
+            NSString* ch = [hexStr substringWithRange:range];
+            [mutableArr addObject:ch];
+        }
+        NSString *value = @"";
+        for (int i = 0; i < [mutableArr[2] intValue]; i++) {
+            value = [NSString stringWithFormat:@"%@%@",value,mutableArr[i+3]];
+        }
+        unsigned long intValue = strtoul([value UTF8String],0,16);
+        
+        string = [NSString stringWithFormat:@"%@\n",[NSString stringWithFormat:@"%lu",intValue]];
+        if ([mutableArr[1] containsString:@"a8"]) {
+            string = [NSString stringWithFormat:@"%lu.%lu.%lu\n",(intValue >> 12) & 0xf, (intValue >> 8) & 0xf, (intValue >> 4) & 0x0f];
+        }
+        if (intValue == 1) {
+            string = @"OK\n";
+        }
     }
+    
     [self.logText.textStorage.mutableString appendString:string];
     [self.logText scrollRangeToVisible:NSMakeRange([[self.logText string] length], 0)];
     [self.logText setNeedsDisplay:YES];
