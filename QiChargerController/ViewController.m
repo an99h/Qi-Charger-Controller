@@ -11,14 +11,13 @@
 #import "Utility.h"
 @interface ViewController()<ORSSerialPortDelegate, NSUserNotificationCenterDelegate>
 @property (nonatomic, strong) ORSSerialPortManager *serialPortManager;
-//B431
+
 @property (nonatomic, strong) ORSSerialPort *serialDevice;
 @property (weak) IBOutlet NSPopUpButton *uartPort;
 @property (weak) IBOutlet NSButton *uartOpenButton;
-@property (nonatomic, copy) NSString *pythonScriptPath;
 @property (unsafe_unretained) IBOutlet NSTextView *logText;
 @property (weak) IBOutlet NSTextField *railVtext;
-
+@property (nonatomic, copy) NSString *pythonScriptPath;
 
 @end
 
@@ -55,6 +54,7 @@
         if ([self.serialDevice isOpen]) {
             NSLog(@"uart open");
             self.uartOpenButton.title = @"CLOSE";
+            self.uartPort.enabled = NO;
             //enter debug mode
             [self writeToQiChargerWithRegister:@"0x05" nargs:@"1" value:@"1"];
         }
@@ -64,6 +64,7 @@
         usleep(100000);
         if (![self.serialDevice isOpen]) {
             self.uartOpenButton.title = @"OPEN";
+            self.uartPort.enabled = YES;
         }
     }
 }
@@ -121,7 +122,7 @@
     
 }
 - (void)serialPortWasRemovedFromSystem:(nonnull ORSSerialPort *)serialPort {
-
+    [self serialPortWasClosed:serialPort];
 }
 
 - (void)serialPort:(ORSSerialPort *)serialPort didReceiveData:(NSData *)data
@@ -133,19 +134,24 @@
         string = @"ERROR\n";
     }
     else{
+        //analytic data
         NSMutableArray *mutableArr = [NSMutableArray arrayWithCapacity:10];
         for (int idx = 0; idx+2 <= hexStr.length; idx+=2) {
             NSRange range = NSMakeRange(idx, 2);
             NSString* ch = [hexStr substringWithRange:range];
             [mutableArr addObject:ch];
         }
+        //get useful data
         NSString *value = @"";
         for (int i = 0; i < [mutableArr[2] intValue]; i++) {
             value = [NSString stringWithFormat:@"%@%@",value,mutableArr[i+3]];
         }
+        //hexstring to int
         unsigned long intValue = strtoul([value UTF8String],0,16);
         
         string = [NSString stringWithFormat:@"%@\n",[NSString stringWithFormat:@"%lu",intValue]];
+        
+        //fw version
         if ([mutableArr[1] containsString:@"a8"]) {
             string = [NSString stringWithFormat:@"%lu.%lu.%lu\n",(intValue >> 12) & 0xf, (intValue >> 8) & 0xf, (intValue >> 4) & 0x0f];
         }
@@ -154,6 +160,7 @@
         }
     }
     
+    //show log
     [self.logText.textStorage.mutableString appendString:string];
     [self.logText scrollRangeToVisible:NSMakeRange([[self.logText string] length], 0)];
     [self.logText setNeedsDisplay:YES];
@@ -161,6 +168,8 @@
 }
 - (void)serialPortWasClosed:(ORSSerialPort *)serialPort
 {
+    self.uartOpenButton.title = @"OPEN";
+    self.uartPort.enabled = YES;
 }
 
 #pragma mark - lazy functions
