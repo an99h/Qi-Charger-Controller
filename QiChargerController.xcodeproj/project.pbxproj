@@ -323,7 +323,7 @@
 				);
 				INFOPLIST_FILE = QiChargerController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = iac.QiChargerController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -344,7 +344,7 @@
 				);
 				INFOPLIST_FILE = QiChargerController/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
 				PRODUCT_BUNDLE_IDENTIFIER = iac.QiChargerController;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

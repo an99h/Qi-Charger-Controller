@@ -9,6 +9,8 @@
 #import <ORSSerial/ORSSerial.h>
 #import "ViewController.h"
 #import "Utility.h"
+
+NSString *cmdFlag = @"";
 @interface ViewController()<ORSSerialPortDelegate, NSUserNotificationCenterDelegate>
 @property (nonatomic, strong) ORSSerialPortManager *serialPortManager;
 
@@ -56,6 +58,7 @@
             self.uartOpenButton.title = @"CLOSE";
             self.uartPort.enabled = NO;
             //enter debug mode
+            cmdFlag = @"enter debug mode : ";
             [self writeToQiChargerWithRegister:@"0x05" nargs:@"1" value:@"1"];
         }
     }
@@ -73,16 +76,19 @@
 
 - (IBAction)setRailV:(NSButton *)sender {
     
+    cmdFlag = @"setRailV : ";
     [self writeToQiChargerWithRegister:@"0x0A" nargs:@"2" value:self.railVtext.stringValue];
 }
 
 - (IBAction)enablePWM:(NSButton *)sender {
 
+    cmdFlag = @"enablePWM : ";
     [self writeToQiChargerWithRegister:@"0x0D" nargs:@"0" value:@""];
 
 }
 - (IBAction)readRailV:(NSButton *)sender {
 
+    cmdFlag = @"RailV = ";
     [self writeToQiChargerWithRegister:@"0x09" nargs:@"0" value:@""];
 
 }
@@ -90,6 +96,7 @@
 
 - (IBAction)readRailC:(NSButton *)sender {
     
+    cmdFlag = @"RailC = ";
     [self writeToQiChargerWithRegister:@"0x0F" nargs:@"0" value:@""];
 
 }
@@ -97,6 +104,7 @@
 
 - (IBAction)readFW:(NSButton *)sender {
 
+    cmdFlag = @"Qi Charger FW : ";
     [self writeToQiChargerWithRegister:@"0x28" nargs:@"0" value:@""];
 
 }
@@ -149,7 +157,13 @@
         //hexstring to int
         unsigned long intValue = strtoul([value UTF8String],0,16);
         
-        string = [NSString stringWithFormat:@"%@\n",[NSString stringWithFormat:@"%lu",intValue]];
+        
+        if ([cmdFlag containsString:@"RailV ="]) {
+            string = [NSString stringWithFormat:@"%@ mV\n",[NSString stringWithFormat:@"%lu",intValue]];
+        }
+        else if([cmdFlag containsString:@"RailC ="]) {
+            string = [NSString stringWithFormat:@"%@ mA\n",[NSString stringWithFormat:@"%lu",intValue]];
+        }
         
         //fw version
         if ([mutableArr[1] containsString:@"a8"]) {
@@ -161,9 +175,10 @@
     }
     
     //show log
-    [self.logText.textStorage.mutableString appendString:string];
+    [self.logText.textStorage.mutableString appendString:[NSString stringWithFormat:@"%@%@",cmdFlag,string]];
     [self.logText scrollRangeToVisible:NSMakeRange([[self.logText string] length], 0)];
     [self.logText setNeedsDisplay:YES];
+    cmdFlag = @"";
     
 }
 - (void)serialPortWasClosed:(ORSSerialPort *)serialPort
