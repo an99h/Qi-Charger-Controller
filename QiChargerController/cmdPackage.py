@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
 #coding=utf-8
 from sys import argv
+from functools import reduce
 
 def be_pack(f, nargs):
     r = bytearray()
@@ -31,7 +32,8 @@ if __name__ == '__main__':
     
     if len(argv) == 3:
         getCmdPackage(int(argv[1],16),int(argv[2]),"")
+
     if len(argv) == 1:
-        print "hello world"
+        print ("hello world")
     
 
