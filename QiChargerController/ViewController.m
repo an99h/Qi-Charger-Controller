@@ -83,7 +83,7 @@ NSString *cmdFlag = @"";
 - (IBAction)enablePWM:(NSButton *)sender {
 
     cmdFlag = @"enablePWM : ";
-    [self writeToQiChargerWithRegister:@"0x0D" nargs:@"0" value:@""];
+    [self writeToQiChargerWithRegister:@"0x0D" nargs:@"0" value:@"1"];
 
 }
 - (IBAction)readRailV:(NSButton *)sender {
